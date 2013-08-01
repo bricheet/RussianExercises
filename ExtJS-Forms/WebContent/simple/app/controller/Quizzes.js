@@ -332,6 +332,26 @@ Ext.define('AM.controller.Quizzes', {
         record.set('currentQuestion',questionNum+1);
     	
     },
+    processUserAnswerSecondTry: function(correctAnswerProperty, userAnswerProperty, 
+    		logNumCorrectAnswersProperty, logUserAnswerProperty, questions, 
+    		questionNum, incorrectResultString, correctResultString, record){
+		resultString = "";
+    	correctAnswer = questions[questionNum-1][correctAnswerProperty];
+		userAnswer = Ext.getCmp(userAnswerProperty).getValue();
+		if (userAnswer != null) {
+    		questions[questionNum-1][logUserAnswerProperty] = userAnswer;
+    	} else {
+    		questions[questionNum-1][logUserAnswerProperty] = 'None';
+    	}
+    	if (correctAnswer == userAnswer){
+    		var correctAnswersSecondTry = record.get(logNumCorrectAnswersProperty);
+    		record.set(logNumCorrectAnswersProperty, correctAnswersSecondTry + 1);
+    		resultString = correctResultString;
+    	} else {
+    		resultString += incorrectResultString;
+    	}
+    	return resultString;
+    },
     verifyQuestionSecondTry: function(button){
     	var button2 = Ext.getCmp('checkButton');
     	var win2 = button2.up('window');
@@ -343,36 +363,12 @@ Ext.define('AM.controller.Quizzes', {
     	var userAnswer = "";
     	var resultString = "";
     	if(Ext.getCmp('questionResult').name == 'userAnswerIncorrectCaseCorrect' || Ext.getCmp('questionResult').name == 'userAnswerIncorrectCaseIncorrect'){
-    		correctAnswer = questions[questionNum-1].correctAnswer;
-    		userAnswer = Ext.getCmp('combobox').getValue();
-    		if (userAnswer != null) {
-        		questions[questionNum-1].userAnswerSecondTry = userAnswer;
-        	} else {
-        		questions[questionNum-1].userAnswerSecondTry = 'None';
-        	}
-        	if (correctAnswer == userAnswer){
-        		var correctAnswersSecondTry = record2.get('correctAnswersSecondTry');
-        		record2.set('correctAnswersSecondTry', correctAnswersSecondTry + 1);
-        		resultString = "Correct!";
-        	} else {
-        		resultString += "Wrong ending.";
-        	}
+    		resultString += this.processUserAnswerSecondTry("correctAnswer", "combobox", "userAnswerSecondTry", 
+    				"correctAnswersSecondTry", questions, questionNum, "Wrong ending.", "Correct ending!", record2);
     	}
     	if(Ext.getCmp('questionResult').name == 'userAnswerCorrectCaseIncorrect' || Ext.getCmp('questionResult').name == 'userAnswerIncorrectCaseIncorrect'){
-    		correctAnswer = questions[questionNum-1].correctCase;
-    		userAnswer = Ext.getCmp('userAnswerCaseCombobox').getValue();
-    		if (userAnswer != null) {
-        		questions[questionNum-1].caseUserAnswerSecondTry = userAnswer;
-        	} else {
-        		questions[questionNum-1].caseUserAnswerSecondTry = 'None';
-        	}
-        	if (correctAnswer == userAnswer){
-        		var correctCaseAnswersSecondTry = record2.get('correctCaseAnswersSecondTry');
-        		record2.set('correctCaseAnswersSecondTry', correctCaseAnswersSecondTry + 1);
-        		resultString = "Correct!";
-        	} else {
-        		resultString += "Wrong case.";
-        	}
+    		resultString += this.processUserAnswerSecondTry("correctCase", "userAnswerCaseCombobox", 
+    				"caseUserAnswerSecondTry", "correctCaseAnswersSecondTry", questions, questionNum, "Wrong case.", "Correct case!", record2);
     	}
     	resultString += " Here's the next question:";
     	var comboboxWin = Ext.getCmp('checkComboButton').up('window');
